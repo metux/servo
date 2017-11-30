@@ -8,7 +8,9 @@ use dom::bindings::codegen::Bindings::PermissionsBinding::{self, PermissionsMeth
 use dom::bindings::error::Error;
 use dom::bindings::reflector::{DomObject, Reflector, reflect_dom_object};
 use dom::bindings::root::DomRoot;
+#[cfg(feature = "webapi-bluetooth")]
 use dom::bluetooth::Bluetooth;
+#[cfg(feature = "webapi-bluetooth")]
 use dom::bluetoothpermissionresult::BluetoothPermissionResult;
 use dom::globalscope::GlobalScope;
 use dom::permissionstatus::PermissionStatus;
@@ -99,6 +101,7 @@ impl Permissions {
 
         // (Query, Request, Revoke) Step 2.
         match root_desc.name {
+            #[cfg(feature = "webapi-bluetooth")]
             PermissionName::Bluetooth => {
                 let bluetooth_desc = match Bluetooth::create_descriptor(cx, permissionDesc) {
                     Ok(descriptor) => descriptor,
@@ -350,6 +353,7 @@ fn allowed_in_nonsecure_contexts(permission_name: &PermissionName) -> bool {
         // https://w3c.github.io/permissions/#dom-permissionname-background-sync
         PermissionName::Background_sync => false,
         // https://webbluetoothcg.github.io/web-bluetooth/#dom-permissionname-bluetooth
+        #[cfg(feature = "webapi-bluetooth")]
         PermissionName::Bluetooth => false,
         // https://storage.spec.whatwg.org/#dom-permissionname-persistent-storage
         PermissionName::Persistent_storage => false,

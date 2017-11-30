@@ -4,6 +4,7 @@
 
 use app_units::Au;
 use base64;
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use canvas_traits::webgl::WebGLChan;
 use cssparser::{Parser, ParserInput};
@@ -26,6 +27,7 @@ use dom::bindings::str::DOMString;
 use dom::bindings::structuredclone::StructuredCloneData;
 use dom::bindings::trace::RootedTraceableBox;
 use dom::bindings::utils::{GlobalStaticData, WindowProxyHandler};
+#[cfg(feature = "webapi-bluetooth")]
 use dom::bluetooth::BluetoothExtraPermissionData;
 use dom::crypto::Crypto;
 use dom::cssstyledeclaration::{CSSModificationAccess, CSSStyleDeclaration, CSSStyleOwner};
@@ -156,6 +158,13 @@ pub enum ReflowReason {
     ElementStateChanged,
 }
 
+#[derive(Clone, Copy, Debug, MallocSizeOf, JSTraceable)]
+pub struct WindowParam {
+    #[cfg(feature = "webapi-bluetooth")]
+    #[ignore_malloc_size_of = "channels are hard"]
+    bluetooth_thread: IpcSender<BluetoothRequest>,
+}
+
 #[dom_struct]
 pub struct Window {
     globalscope: GlobalScope,
@@ -221,10 +230,10 @@ pub struct Window {
     /// The current size of the window, in pixels.
     window_size: Cell<Option<WindowSizeData>>,
 
-    /// A handle for communicating messages to the bluetooth thread.
-    #[ignore_malloc_size_of = "channels are hard"]
-    bluetooth_thread: IpcSender<BluetoothRequest>,
+    /// handles for configurable features, eg. bluetooth, etc
+    window_param: WindowParam,
 
+    #[cfg(feature = "webapi-bluetooth")]
     bluetooth_extra_permission_data: BluetoothExtraPermissionData,
 
     /// An enlarged rectangle around the page contents visible in the viewport, used
@@ -373,10 +382,12 @@ impl Window {
             })
     }
 
+    #[cfg(feature = "webapi-bluetooth")]
     pub fn bluetooth_thread(&self) -> IpcSender<BluetoothRequest> {
-        self.bluetooth_thread.clone()
+        self.param.bluetooth_thread.clone()
     }
 
+    #[cfg(feature = "webapi-bluetooth")]
     pub fn bluetooth_extra_permission_data(&self) -> &BluetoothExtraPermissionData {
          &self.bluetooth_extra_permission_data
     }
@@ -1766,7 +1777,7 @@ impl Window {
         image_cache_chan: Sender<ImageCacheMsg>,
         image_cache: Arc<ImageCache>,
         resource_threads: ResourceThreads,
-        bluetooth_thread: IpcSender<BluetoothRequest>,
+        window_param: WindowParam,
         mem_profiler_chan: MemProfilerChan,
         time_profiler_chan: TimeProfilerChan,
         devtools_chan: Option<IpcSender<ScriptToDevtoolsControlMsg>>,
@@ -1833,7 +1844,8 @@ impl Window {
             parent_info,
             dom_static: GlobalStaticData::new(),
             js_runtime: DomRefCell::new(Some(runtime.clone())),
-            bluetooth_thread,
+            window_param: window_param,
+            #[cfg(feature = "webapi-bluetooth")]
             bluetooth_extra_permission_data: BluetoothExtraPermissionData::new(),
             page_clip_rect: Cell::new(max_rect()),
             resize_event: Default::default(),

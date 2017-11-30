@@ -24,7 +24,9 @@ extern crate gleam;
 #[macro_use]
 extern crate log;
 
+#[cfg(feature = "webapi-bluetooth")]
 pub extern crate bluetooth;
+#[cfg(feature = "webapi-bluetooth")]
 pub extern crate bluetooth_traits;
 pub extern crate canvas;
 pub extern crate canvas_traits;
@@ -67,7 +69,9 @@ fn webdriver(port: u16, constellation: Sender<ConstellationMsg>) {
 #[cfg(not(feature = "webdriver"))]
 fn webdriver(_port: u16, _constellation: Sender<ConstellationMsg>) { }
 
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth::BluetoothThreadFactory;
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use canvas::gl_context::GLContextFactory;
 use canvas::webgl_thread::WebGLThreads;
@@ -541,7 +545,6 @@ fn create_constellation(user_agent: Cow<'static, str>,
                         webrender_api_sender: webrender_api::RenderApiSender,
                         window_gl: Rc<gl::Gl>)
                         -> (Sender<ConstellationMsg>, SWManagerSenders) {
-    let bluetooth_thread: IpcSender<BluetoothRequest> = BluetoothThreadFactory::new();
 
     let (public_resource_threads, private_resource_threads) =
         new_resource_threads(user_agent,
@@ -583,11 +586,15 @@ fn create_constellation(user_agent: Cow<'static, str>,
         webrender.set_output_image_handler(output_handler);
     }
 
+    #[cfg(feature = "webapi-bluetooth")]
+    let bluetooth_thread = BluetoothThreadFactory::new();
+
     let initial_state = InitialConstellationState {
         compositor_proxy,
         embedder_proxy,
         debugger_chan,
         devtools_chan,
+        #[cfg(feature = "webapi-bluetooth")]
         bluetooth_thread,
         font_cache_thread,
         public_resource_threads,

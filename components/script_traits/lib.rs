@@ -9,6 +9,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 
+#[cfg(feature = "webapi-bluetooth")]
 extern crate bluetooth_traits;
 extern crate canvas_traits;
 extern crate cookie as cookie_rs;
@@ -38,6 +39,7 @@ extern crate webvr_traits;
 mod script_msg;
 pub mod webdriver_msg;
 
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use canvas_traits::webgl::WebGLPipeline;
 use devtools_traits::{DevtoolScriptControlMsg, ScriptToDevtoolsControlMsg, WorkerId};
@@ -542,6 +544,7 @@ pub struct InitialScriptState {
     /// A channel to the resource manager thread.
     pub resource_threads: ResourceThreads,
     /// A channel to the bluetooth thread.
+    #[cfg(feature = "webapi-bluetooth")]
     pub bluetooth_thread: IpcSender<BluetoothRequest>,
     /// The image cache for this script thread.
     pub image_cache: Arc<ImageCache>,

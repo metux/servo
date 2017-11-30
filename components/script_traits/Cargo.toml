@@ -10,7 +10,7 @@ name = "script_traits"
 path = "lib.rs"
 
 [dependencies]
-bluetooth_traits = {path = "../bluetooth_traits"}
+#bluetooth_traits = {path = "../bluetooth_traits", optional=true}
 canvas_traits = {path = "../canvas_traits"}
 cookie = "0.10"
 devtools_traits = {path = "../devtools_traits"}
