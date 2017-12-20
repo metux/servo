@@ -9,6 +9,9 @@ publish = false
 name = "script_traits"
 path = "lib.rs"
 
+[features]
+#webapi-webvr = [ "webvr_traits" ]
+
 [dependencies]
 #bluetooth_traits = {path = "../bluetooth_traits", optional=true}
 canvas_traits = {path = "../canvas_traits"}
@@ -33,4 +36,4 @@ style_traits = {path = "../style_traits", features = ["servo"]}
 time = "0.1.12"
 url = "1.2"
 webrender_api = {git = "https://github.com/servo/webrender", features = ["ipc"]}
-webvr_traits = {path = "../webvr_traits"}
+#webvr_traits = {path = "../webvr_traits", optional = true}

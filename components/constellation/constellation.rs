@@ -159,6 +159,7 @@ use style_traits::cursor::Cursor;
 use style_traits::viewport::ViewportConstraints;
 use timer_scheduler::TimerScheduler;
 use webrender_api;
+#[cfg(feature = "webapi-webvr")]
 use webvr_traits::{WebVREvent, WebVRMsg};
 
 /// The `Constellation` itself. In the servo browser, there is one
@@ -336,6 +337,7 @@ pub struct Constellation<Message, LTF, STF> {
     webgl_threads: WebGLThreads,
 
     /// A channel through which messages can be sent to the webvr thread.
+    #[cfg(feature = "webapi-webvr")]
     webvr_chan: Option<IpcSender<WebVRMsg>>,
 }
 
@@ -382,6 +384,7 @@ pub struct InitialConstellationState {
     pub webgl_threads: WebGLThreads,
 
     /// A channel to the webgl thread.
+    #[cfg(feature = "webapi-webvr")]
     pub webvr_chan: Option<IpcSender<WebVRMsg>>,
 
     /// Whether the constellation supports the clipboard.
@@ -631,6 +634,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
                     (rng, prob)
                 }),
                 webgl_threads: state.webgl_threads,
+                #[cfg(feature = "webapi-webvr")]
                 webvr_chan: state.webvr_chan,
             };
 
@@ -752,6 +756,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
             webrender_document: self.webrender_document,
             is_private,
             webgl_chan: self.webgl_threads.pipeline(),
+            #[cfg(feature = "webapi-webvr")]
             webvr_chan: self.webvr_chan.clone()
         });
 
@@ -1085,6 +1090,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
             FromCompositorMsg::LogEntry(top_level_browsing_context_id, thread_name, entry) => {
                 self.handle_log_entry(top_level_browsing_context_id, thread_name, entry);
             }
+            #[cfg(feature = "webapi-webvr")]
             FromCompositorMsg::WebVREvents(pipeline_ids, events) => {
                 debug!("constellation got {:?} WebVR events", events.len());
                 self.handle_webvr_events(pipeline_ids, events);
@@ -1466,10 +1472,13 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
             warn!("Exit WebGL Thread failed ({})", e);
         }
 
-        if let Some(chan) = self.webvr_chan.as_ref() {
-            debug!("Exiting WebVR thread.");
-            if let Err(e) = chan.send(WebVRMsg::Exit) {
-                warn!("Exit WebVR thread failed ({})", e);
+        #[cfg(feature = "webapi-webvr")]
+        {
+            if let Some(chan) = self.webvr_chan.as_ref() {
+                debug!("Exiting WebVR thread.");
+                if let Err(e) = chan.send(WebVRMsg::Exit) {
+                    warn!("Exit WebVR thread failed ({})", e);
+                }
             }
         }
 
@@ -1600,6 +1609,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
         }
     }
 
+    #[cfg(feature = "webapi-webvr")]
     fn handle_webvr_events(&mut self, ids: Vec<PipelineId>, events: Vec<WebVREvent>) {
         for id in ids {
             match self.pipelines.get_mut(&id) {

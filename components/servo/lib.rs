@@ -53,7 +53,9 @@ pub extern crate servo_url;
 pub extern crate style;
 pub extern crate style_traits;
 pub extern crate webrender_api;
+#[cfg(feature = "webapi-webvr")]
 pub extern crate webvr;
+#[cfg(feature = "webapi-webvr")]
 pub extern crate webvr_traits;
 
 #[cfg(feature = "webdriver")]
@@ -75,6 +77,7 @@ use bluetooth::BluetoothThreadFactory;
 use bluetooth_traits::BluetoothRequest;
 use canvas::gl_context::GLContextFactory;
 use canvas::webgl_thread::WebGLThreads;
+use canvas::webgl_thread::WebGLThreadParam;
 use compositing::{IOCompositor, ShutdownState, RenderNotifier};
 use compositing::compositor_thread::{self, CompositorProxy, CompositorReceiver, InitialCompositorState};
 use compositing::compositor_thread::{EmbedderMsg, EmbedderProxy, EmbedderReceiver};
@@ -107,6 +110,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::mpsc::{Sender, channel};
 use webrender::RendererKind;
+#[cfg(feature = "webapi-webvr")]
 use webvr::{WebVRThread, WebVRCompositorHandler};
 
 pub use gleam::gl;
@@ -531,6 +535,48 @@ fn create_compositor_channel(event_loop_waker: Box<compositor_thread::EventLoopW
      })
 }
 
+#[cfg(feature = "webapi-webvr")]
+fn init_webgl(gl_factory: GLContextFactory,
+              window_gl: Rc<gl::Gl>,
+              webrender_api_sender: webrender_api::RenderApiSender)
+              -> (WebGLThreads, Box<webrender::ExternalImageHandler>, Option<Box<webrender::OutputImageHandler>>) {
+
+        let (webvr_chan, webvr_constellation_sender, webvr_compositor) = if PREFS.is_webvr_enabled() {
+            // WebVR initialization
+            let (mut handler, sender) = WebVRCompositorHandler::new();
+            let (webvr_thread, constellation_sender) = WebVRThread::spawn(sender);
+            handler.set_webvr_thread_sender(webvr_thread.clone());
+            (Some(webvr_thread), Some(constellation_sender), Some(handler))
+        } else {
+            (None, None, None)
+        };
+
+        // Initialize WebGL Thread entry point.
+        let param = WebGLThreadParam {
+            webvr_compositor: webvr_compositor.map(|c| c as Box<_>)
+        };
+
+        let (webgl_threads, image_handler, output_handler) = WebGLThreads::new(gl_factory,
+                                                                               window_gl,
+                                                                               param,
+                                                                               webrender_api_sender.clone());
+        (webgl_threads, image_handler, output_handler)
+}
+
+#[cfg(not(feature = "webapi-webvr"))]
+fn init_webgl(gl_factory: GLContextFactory,
+              window_gl: Rc<gl::Gl>,
+              webrender_api_sender: webrender_api::RenderApiSender)
+              -> (WebGLThreads, Box<webrender::ExternalImageHandler>, Option<Box<webrender::OutputImageHandler>>) {
+
+    let param = WebGLThreadParam {};
+    let (webgl_threads, image_handler, output_handler) = WebGLThreads::new(gl_factory,
+                                                                           window_gl,
+                                                                           webrender_api_sender.clone(),
+                                                                           param);
+    (webgl_threads, image_handler, output_handler)
+}
+
 fn create_constellation(user_agent: Cow<'static, str>,
                         config_dir: Option<PathBuf>,
                         embedder_proxy: EmbedderProxy,
@@ -556,16 +602,6 @@ fn create_constellation(user_agent: Cow<'static, str>,
 
     let resource_sender = public_resource_threads.sender();
 
-    let (webvr_chan, webvr_constellation_sender, webvr_compositor) = if PREFS.is_webvr_enabled() {
-        // WebVR initialization
-        let (mut handler, sender) = WebVRCompositorHandler::new();
-        let (webvr_thread, constellation_sender) = WebVRThread::spawn(sender);
-        handler.set_webvr_thread_sender(webvr_thread.clone());
-        (Some(webvr_thread), Some(constellation_sender), Some(handler))
-    } else {
-        (None, None, None)
-    };
-
     // GLContext factory used to create WebGL Contexts
     let gl_factory = if opts::get().should_use_osmesa() {
         GLContextFactory::current_osmesa_handle().unwrap()
@@ -573,11 +609,10 @@ fn create_constellation(user_agent: Cow<'static, str>,
         GLContextFactory::current_native_handle(&compositor_proxy).unwrap()
     };
 
-    // Initialize WebGL Thread entry point.
-    let (webgl_threads, image_handler, output_handler) = WebGLThreads::new(gl_factory,
-                                                                           window_gl,
-                                                                           webrender_api_sender.clone(),
-                                                                           webvr_compositor.map(|c| c as Box<_>));
+    let (webgl_threads, image_handler, output_handler) = init_webgl(gl_factory,
+                                                                    window_gl,
+                                                                    webrender_api_sender.clone());
+
     // Set webrender external image handler for WebGL textures
     webrender.set_external_image_handler(image_handler);
 
@@ -605,6 +640,7 @@ fn create_constellation(user_agent: Cow<'static, str>,
         webrender_document,
         webrender_api_sender,
         webgl_threads,
+        #[cfg(feature = "webapi-webvr")]
         webvr_chan,
     };
     let (constellation_chan, from_swmanager_sender) =
@@ -612,9 +648,12 @@ fn create_constellation(user_agent: Cow<'static, str>,
                         layout_thread::LayoutThread,
                         script::script_thread::ScriptThread>::start(initial_state);
 
-    if let Some(webvr_constellation_sender) = webvr_constellation_sender {
-        // Set constellation channel used by WebVR thread to broadcast events
-        webvr_constellation_sender.send(constellation_chan.clone()).unwrap();
+    #[cfg(feature = "webapi-webvr")]
+    {
+        if let Some(webvr_constellation_sender) = webvr_constellation_sender {
+            // Set constellation channel used by WebVR thread to broadcast events
+            webvr_constellation_sender.send(constellation_chan.clone()).unwrap();
+        }
     }
 
     // channels to communicate with Service Worker Manager

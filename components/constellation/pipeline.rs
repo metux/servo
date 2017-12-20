@@ -42,6 +42,7 @@ use std::sync::mpsc::Sender;
 use style_traits::CSSPixel;
 use style_traits::DevicePixel;
 use webrender_api;
+#[cfg(feature = "webapi-webvr")]
 use webvr_traits::WebVRMsg;
 
 /// A `Pipeline` is the constellation's view of a `Document`. Each pipeline has an
@@ -179,6 +180,7 @@ pub struct InitialPipelineState {
     pub webgl_chan: WebGLPipeline,
 
     /// A channel to the webvr thread.
+    #[cfg(feature = "webapi-webvr")]
     pub webvr_chan: Option<IpcSender<WebVRMsg>>,
 }
 
@@ -279,6 +281,7 @@ impl Pipeline {
                     webrender_api_sender: state.webrender_api_sender,
                     webrender_document: state.webrender_document,
                     webgl_chan: state.webgl_chan,
+                    #[cfg(feature = "webapi-webvr")]
                     webvr_chan: state.webvr_chan,
                 };
 
@@ -481,6 +484,7 @@ pub struct UnprivilegedPipelineContent {
     webrender_api_sender: webrender_api::RenderApiSender,
     webrender_document: webrender_api::DocumentId,
     webgl_chan: WebGLPipeline,
+    #[cfg(feature = "webapi-webvr")]
     webvr_chan: Option<IpcSender<WebVRMsg>>,
 }
 
@@ -516,6 +520,7 @@ impl UnprivilegedPipelineContent {
             pipeline_namespace_id: self.pipeline_namespace_id,
             content_process_shutdown_chan: self.script_content_process_shutdown_chan,
             webgl_chan: self.webgl_chan,
+            #[cfg(feature = "webapi-webvr")]
             webvr_chan: self.webvr_chan,
             webrender_document: self.webrender_document,
         }, self.load_data.clone());

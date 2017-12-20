@@ -41,6 +41,7 @@ extern crate servo_remutex;
 extern crate servo_url;
 extern crate style_traits;
 extern crate webrender_api;
+#[cfg(feature = "webapi-webvr")]
 extern crate webvr_traits;
 
 mod browsingcontext;

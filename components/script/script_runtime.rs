@@ -92,6 +92,7 @@ pub enum ScriptThreadEventCategory {
     ServiceWorkerEvent,
     EnterFullscreen,
     ExitFullscreen,
+    #[cfg(feature = "webapi-webvr")]
     WebVREvent,
     PerformanceTimelineTask,
 }

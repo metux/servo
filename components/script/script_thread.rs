@@ -127,6 +127,7 @@ use url::Position;
 use url::percent_encoding::percent_decode;
 use webdriver_handlers;
 use webrender_api::DocumentId;
+#[cfg(features = "webapi-webvr")]
 use webvr_traits::{WebVREvent, WebVRMsg};
 
 pub type ImageCacheMsg = (PipelineId, PendingImageResponse);
@@ -491,6 +492,7 @@ pub struct ScriptThread {
     webgl_chan: WebGLPipeline,
 
     /// A handle to the webvr thread, if available
+    #[cfg(feature = "webapi-webvr")]
     webvr_chan: Option<IpcSender<WebVRMsg>>,
 
     /// The worklet thread pool
@@ -879,6 +881,7 @@ impl ScriptThread {
             layout_to_constellation_chan: state.layout_to_constellation_chan,
 
             webgl_chan: state.webgl_chan,
+            #[cfg(feature = "webapi-webvr")]
             webvr_chan: state.webvr_chan,
 
             worklet_thread_pool: Default::default(),
@@ -1184,6 +1187,7 @@ impl ScriptThread {
                     DispatchStorageEvent(id, ..) => Some(id),
                     ReportCSSError(id, ..) => Some(id),
                     Reload(id, ..) => Some(id),
+                    #[cfg(feature = "webapi-webvr")]
                     WebVREvents(id, ..) => Some(id),
                     PaintMetric(..) => None,
                 }
@@ -1239,6 +1243,7 @@ impl ScriptThread {
                 ScriptThreadEventCategory::SetViewport => ProfilerCategory::ScriptSetViewport,
                 ScriptThreadEventCategory::TimerEvent => ProfilerCategory::ScriptTimerEvent,
                 ScriptThreadEventCategory::WebSocketEvent => ProfilerCategory::ScriptWebSocketEvent,
+                #[cfg(feature = "webapi-webvr")]
                 ScriptThreadEventCategory::WebVREvent => ProfilerCategory::ScriptWebVREvent,
                 ScriptThreadEventCategory::WorkerEvent => ProfilerCategory::ScriptWorkerEvent,
                 ScriptThreadEventCategory::WorkletEvent => ProfilerCategory::ScriptWorkletEvent,
@@ -1327,6 +1332,7 @@ impl ScriptThread {
                 self.handle_reload(pipeline_id),
             ConstellationControlMsg::ExitPipeline(pipeline_id, discard_browsing_context) =>
                 self.handle_exit_pipeline_msg(pipeline_id, discard_browsing_context),
+            #[cfg(feature = "webapi-webvr")]
             ConstellationControlMsg::WebVREvents(pipeline_id, events) =>
                 self.handle_webvr_events(pipeline_id, events),
             ConstellationControlMsg::PaintMetric(pipeline_id, metric_type, metric_value) =>
@@ -2142,6 +2148,9 @@ impl ScriptThread {
         let window_param = WindowParam {
             #[cfg(feature = "webapi-bluetooth")]
             bluetooth_thread: self.bluetooth_thread.clone(),
+
+            #[cfg(feature = "webapi-webvr")]
+            webvr_chan: self.webvr_chan.clone(),
         };
 
         // Create the window and document objects.
@@ -2173,7 +2182,6 @@ impl ScriptThread {
             incomplete.navigation_start,
             incomplete.navigation_start_precise,
             self.webgl_chan.channel(),
-            self.webvr_chan.clone(),
             self.microtask_queue.clone(),
             self.webrender_document,
         );
@@ -2664,6 +2672,7 @@ impl ScriptThread {
         }
     }
 
+    #[cfg(feature = "webapi-webvr")]
     fn handle_webvr_events(&self, pipeline_id: PipelineId, events: Vec<WebVREvent>) {
         let window = self.documents.borrow().find_window(pipeline_id);
         if let Some(window) = window {

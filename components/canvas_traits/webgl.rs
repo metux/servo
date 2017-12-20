@@ -34,6 +34,7 @@ pub enum WebGLMsg {
     /// Runs a WebGLCommand in a specific WebGLContext.
     WebGLCommand(WebGLContextId, WebGLCommand),
     /// Runs a WebVRCommand in a specific WebGLContext.
+    #[cfg(feature = "webapi-webvr")]
     WebVRCommand(WebGLContextId, WebVRCommand),
     /// Locks a specific WebGLContext. Lock messages are used for a correct synchronization
     /// with WebRender external image API.
@@ -124,6 +125,7 @@ impl WebGLMsgSender {
 
     /// Send a WebVRCommand message
     #[inline]
+    #[cfg(feature = "webapi-webvr")]
     pub fn send_vr(&self, command: WebVRCommand) -> WebGLSendResult {
         self.sender.send(WebGLMsg::WebVRCommand(self.ctx_id, command))
     }
@@ -389,10 +391,12 @@ pub enum WebGLShaderParameter {
     Invalid,
 }
 
+#[cfg(feature = "webapi-webvr")]
 pub type WebVRDeviceId = u32;
 
 // WebVR commands that must be called in the WebGL render thread.
 #[derive(Clone, Deserialize, Serialize)]
+#[cfg(feature = "webapi-webvr")]
 pub enum WebVRCommand {
     /// Start presenting to a VR device.
     Create(WebVRDeviceId),
@@ -406,6 +410,7 @@ pub enum WebVRCommand {
 
 // Trait object that handles WebVR commands.
 // Receives the texture id and size associated to the WebGLContext.
+#[cfg(feature = "webapi-webvr")]
 pub trait WebVRRenderHandler: Send {
     fn handle(&mut self, command: WebVRCommand, texture: Option<(u32, Size2D<i32>)>);
 }

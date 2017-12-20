@@ -270,6 +270,7 @@ impl Preferences {
         self.0.write().unwrap().extend(extension);
     }
 
+    #[cfg(feature = "webapi-webvr")]
     pub fn is_webvr_enabled(&self) -> bool {
         self.get("dom.webvr.enabled").as_boolean().unwrap_or(false)
     }

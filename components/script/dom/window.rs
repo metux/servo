@@ -124,6 +124,7 @@ use tinyfiledialogs::{self, MessageBoxIcon};
 use url::Position;
 use webdriver_handlers::jsval_to_webdriver;
 use webrender_api::{ClipId, DocumentId};
+#[cfg(feature = "webapi-webvr")]
 use webvr_traits::WebVRMsg;
 
 /// Current state of the window object
@@ -163,6 +164,10 @@ pub struct WindowParam {
     #[cfg(feature = "webapi-bluetooth")]
     #[ignore_malloc_size_of = "channels are hard"]
     bluetooth_thread: IpcSender<BluetoothRequest>,
+
+    #[cfg(feature = "webapi-webvr")]
+    #[ignore_malloc_size_of = "channels are hard"]
+    webvr_chan: Option<IpcSender<WebVRMsg>>,
 }
 
 #[dom_struct]
@@ -277,6 +282,7 @@ pub struct Window {
 
     /// A handle for communicating messages to the webvr thread, if available.
     #[ignore_malloc_size_of = "channels are hard"]
+    #[cfg(feature = "webapi-webvr")]
     webvr_chan: Option<IpcSender<WebVRMsg>>,
 
     /// A map for storing the previous permission state read results.
@@ -411,6 +417,7 @@ impl Window {
         self.webgl_chan.clone()
     }
 
+    #[cfg(feature = "webapi-webvr")]
     pub fn webvr_thread(&self) -> Option<IpcSender<WebVRMsg>> {
         self.webvr_chan.clone()
     }
@@ -1793,7 +1800,7 @@ impl Window {
         navigation_start: u64,
         navigation_start_precise: u64,
         webgl_chan: WebGLChan,
-        webvr_chan: Option<IpcSender<WebVRMsg>>,
+//        webvr_chan: Option<IpcSender<WebVRMsg>>,
         microtask_queue: Rc<MicrotaskQueue>,
         webrender_document: DocumentId,
     ) -> DomRoot<Self> {
@@ -1865,7 +1872,7 @@ impl Window {
             media_query_lists: WeakMediaQueryListVec::new(),
             test_runner: Default::default(),
             webgl_chan,
-            webvr_chan,
+            #[cfg(feature = "webapi-webvr")] webvr_chan,
             permission_state_invocation_results: Default::default(),
             pending_layout_images: Default::default(),
             unminified_js_dir: Default::default(),

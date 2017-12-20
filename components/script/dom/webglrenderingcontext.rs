@@ -5,7 +5,8 @@
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use canvas_traits::canvas::{byte_swap, multiply_u8_pixel};
 use canvas_traits::webgl::{WebGLContextShareMode, WebGLCommand, WebGLError, WebGLVersion, WebGLSLVersion};
-use canvas_traits::webgl::{WebGLFramebufferBindingRequest, WebGLMsg, WebGLMsgSender, WebGLParameter, WebVRCommand};
+use canvas_traits::webgl::{WebGLFramebufferBindingRequest, WebGLMsg, WebGLMsgSender, WebGLParameter};
+#[cfg(feature = "webapi-webvr")] use canvas_traits::webgl::WebVRCommand;
 use canvas_traits::webgl::DOMToTextureCommand;
 use canvas_traits::webgl::WebGLError::*;
 use canvas_traits::webgl::webgl_channel;
@@ -379,6 +380,7 @@ impl WebGLRenderingContext {
         self.webgl_sender.send(command).unwrap();
     }
 
+    #[cfg(feature = "webapi-webvr")]
     #[inline]
     pub fn send_vr_command(&self, command: WebVRCommand) {
         self.webgl_sender.send_vr(command).unwrap();

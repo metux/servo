@@ -4,6 +4,7 @@
 
 use dom::bindings::codegen::Bindings::NavigatorBinding;
 use dom::bindings::codegen::Bindings::NavigatorBinding::NavigatorMethods;
+#[cfg(feature = "webapi-webvr")]
 use dom::bindings::codegen::Bindings::VRBinding::VRBinding::VRMethods;
 use dom::bindings::reflector::{Reflector, DomObject, reflect_dom_object};
 use dom::bindings::root::{DomRoot, MutNullableDom};
@@ -18,6 +19,7 @@ use dom::permissions::Permissions;
 use dom::pluginarray::PluginArray;
 use dom::promise::Promise;
 use dom::serviceworkercontainer::ServiceWorkerContainer;
+#[cfg(feature = "webapi-webvr")]
 use dom::vr::VR;
 use dom::window::Window;
 use dom_struct::dom_struct;
@@ -31,6 +33,7 @@ pub struct Navigator {
     plugins: MutNullableDom<PluginArray>,
     mime_types: MutNullableDom<MimeTypeArray>,
     service_worker: MutNullableDom<ServiceWorkerContainer>,
+    #[cfg(feature = "webapi-webvr")]
     vr: MutNullableDom<VR>,
     #[cfg(feature = "webapi-gamepad")]
     gamepads: MutNullableDom<GamepadList>,
@@ -46,6 +49,7 @@ impl Navigator {
             plugins: Default::default(),
             mime_types: Default::default(),
             service_worker: Default::default(),
+            #[cfg(feature = "webapi-webvr")]
             vr: Default::default(),
             #[cfg(feature = "webapi-gamepad")]
             gamepads: Default::default(),
@@ -153,12 +157,14 @@ impl NavigatorMethods for Navigator {
 
     // https://w3c.github.io/webvr/spec/1.1/#navigator-getvrdisplays-attribute
     #[allow(unrooted_must_root)]
+    #[cfg(feature = "webapi-webvr")]
     fn GetVRDisplays(&self) -> Rc<Promise> {
         self.Vr().GetDisplays()
     }
 }
 
 impl Navigator {
+    #[cfg(feature = "webapi-webvr")]
     pub fn Vr(&self) -> DomRoot<VR> {
         self.vr.or_init(|| VR::new(&self.global()))
     }

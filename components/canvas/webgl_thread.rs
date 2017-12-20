@@ -17,9 +17,13 @@ use webrender_api;
 /// It allows to get a WebGLThread handle for each script pipeline.
 pub use ::webgl_mode::WebGLThreads;
 
-/// A WebGLThread manages the life cycle and message multiplexing of
-/// a set of WebGLContexts living in the same thread.
-pub struct WebGLThread<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> {
+pub struct WebGLThreadParam {
+    /// Handler user to send WebVR commands.
+    #[cfg(feature = "webapi-webvr")]
+    webvr_compositor: Option<Box<WebVRRenderHandler>>,
+}
+
+pub struct WebGLThread<OB: WebGLThreadObserver> {
     /// Factory used to create a new GLContext shared with the WR/Main thread.
     gl_factory: GLContextFactory,
     /// Channel used to generate/update or delete `webrender_api::ImageKey`s.
@@ -33,17 +37,18 @@ pub struct WebGLThread<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver
     /// Id generator for new WebGLContexts.
     next_webgl_id: usize,
     /// Handler user to send WebVR commands.
-    webvr_compositor: Option<VR>,
+    param: WebGLThreadParam,
     /// Generic observer that listens WebGLContext creation, resize or removal events.
     observer: OB,
     /// Texture ids and sizes used in DOM to texture outputs.
     dom_outputs: FnvHashMap<webrender_api::PipelineId, DOMToTextureData>,
 }
 
-impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, OB> {
+impl<OB: WebGLThreadObserver> WebGLThread<OB> {
+
     pub fn new(gl_factory: GLContextFactory,
                webrender_api_sender: webrender_api::RenderApiSender,
-               webvr_compositor: Option<VR>,
+               param: WebGLThreadParam,
                observer: OB) -> Self {
         WebGLThread {
             gl_factory,
@@ -52,7 +57,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
             cached_context_info: Default::default(),
             bound_context_id: None,
             next_webgl_id: 0,
-            webvr_compositor,
+            param: param,
             observer: observer,
             dom_outputs: Default::default(),
         }
@@ -62,7 +67,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
     /// communicate with it.
     pub fn start(gl_factory: GLContextFactory,
                  webrender_api_sender: webrender_api::RenderApiSender,
-                 webvr_compositor: Option<VR>,
+                 param: WebGLThreadParam,
                  observer: OB)
                  -> WebGLSender<WebGLMsg> {
         let (sender, receiver) = webgl_channel::<WebGLMsg>().unwrap();
@@ -70,7 +75,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
         thread::Builder::new().name("WebGLThread".to_owned()).spawn(move || {
             let mut renderer = WebGLThread::new(gl_factory,
                                                 webrender_api_sender,
-                                                webvr_compositor,
+                                                param,
                                                 observer);
             let webgl_chan = WebGLChan(sender);
             loop {
@@ -113,6 +118,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
             WebGLMsg::WebGLCommand(ctx_id, command) => {
                 self.handle_webgl_command(ctx_id, command);
             },
+            #[cfg(feature = "webapi-webvr")]
             WebGLMsg::WebVRCommand(ctx_id, command) => {
                 self.handle_webvr_command(ctx_id, command);
             },
@@ -144,6 +150,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
     }
 
     /// Handles a WebVRCommand for a specific WebGLContext
+    #[cfg(feature = "webapi-webvr")]
     fn handle_webvr_command(&mut self, context_id: WebGLContextId, command: WebVRCommand) {
         Self::make_current_if_needed(context_id, &self.contexts, &mut self.bound_context_id);
         let texture = match command {
@@ -152,7 +159,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
             },
             _ => None
         };
-        self.webvr_compositor.as_mut().unwrap().handle(command, texture.map(|t| (t.texture_id, t.size)));
+        self.param.webvr_compositor.as_mut().unwrap().handle(command, texture.map(|t| (t.texture_id, t.size)));
     }
 
     /// Handles a lock external callback received from webrender::ExternalImageHandler
@@ -540,6 +547,7 @@ impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> WebGLThread<VR, 
     }
 }
 
+#[cfg(feature = "webapi-webvr")]
 impl<VR: WebVRRenderHandler + 'static, OB: WebGLThreadObserver> Drop for WebGLThread<VR, OB> {
     fn drop(&mut self) {
         // Call remove_context functions in order to correctly delete WebRender image keys.

@@ -34,6 +34,7 @@ extern crate servo_url;
 extern crate style_traits;
 extern crate time;
 extern crate webrender_api;
+#[cfg(feature = "webapi-webvr")]
 extern crate webvr_traits;
 
 mod script_msg;
@@ -73,6 +74,7 @@ use style_traits::SpeculativePainter;
 use style_traits::cursor::Cursor;
 use webdriver_msg::{LoadStatus, WebDriverScriptCommand};
 use webrender_api::{ClipId, DevicePixel, DocumentId, ImageKey};
+#[cfg(feature = "webapi-webvr")]
 use webvr_traits::{WebVREvent, WebVRMsg};
 
 pub use script_msg::{LayoutMsg, ScriptMsg, EventResult, LogEntry};
@@ -324,6 +326,7 @@ pub enum ConstellationControlMsg {
     /// Reload the given page.
     Reload(PipelineId),
     /// Notifies the script thread of WebVR events.
+    #[cfg(feature = "webapi-webvr")]
     WebVREvents(PipelineId, Vec<WebVREvent>),
     /// Notifies the script thread about a new recorded paint metric.
     PaintMetric(PipelineId, ProgressiveWebMetricType, u64),
@@ -359,6 +362,7 @@ impl fmt::Debug for ConstellationControlMsg {
             DispatchStorageEvent(..) => "DispatchStorageEvent",
             ReportCSSError(..) => "ReportCSSError",
             Reload(..) => "Reload",
+            #[cfg(feature = "webapi-webvr")]
             WebVREvents(..) => "WebVREvents",
             PaintMetric(..) => "PaintMetric",
         };
@@ -563,6 +567,7 @@ pub struct InitialScriptState {
     /// A channel to the webgl thread used in this pipeline.
     pub webgl_chan: WebGLPipeline,
     /// A channel to the webvr thread, if available.
+    #[cfg(feature = "webapi-webvr")]
     pub webvr_chan: Option<IpcSender<WebVRMsg>>,
     /// The Webrender document ID associated with this thread.
     pub webrender_document: DocumentId,
@@ -800,6 +805,7 @@ pub enum ConstellationMsg {
     /// A log entry, with the top-level browsing context id and thread name
     LogEntry(Option<TopLevelBrowsingContextId>, Option<String>, LogEntry),
     /// Dispatch WebVR events to the subscribed script threads.
+    #[cfg(feature = "webapi-webvr")]
     WebVREvents(Vec<PipelineId>, Vec<WebVREvent>),
     /// Create a new top level browsing context.
     NewBrowser(ServoUrl, IpcSender<TopLevelBrowsingContextId>),

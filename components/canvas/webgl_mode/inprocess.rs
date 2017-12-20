@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use ::gl_context::GLContextFactory;
-use ::webgl_thread::{WebGLExternalImageApi, WebGLExternalImageHandler, WebGLThreadObserver, WebGLThread};
+use ::webgl_thread::{WebGLExternalImageApi, WebGLExternalImageHandler, WebGLThreadObserver, WebGLThread, WebGLThreadParam};
 use canvas_traits::webgl::{WebGLChan, WebGLContextId, WebGLMsg, WebGLPipeline, WebGLReceiver};
-use canvas_traits::webgl::{WebGLSender, WebVRCommand, WebVRRenderHandler};
+use canvas_traits::webgl::WebGLSender;
+#[cfg(feature = "webapi-webvr")]
+use canvas_traits::webgl::{WebVRCommand, WebVRRenderHandler};
 use canvas_traits::webgl::DOMToTextureCommand;
 use canvas_traits::webgl::webgl_channel;
 use euclid::Size2D;
@@ -25,12 +27,12 @@ impl WebGLThreads {
     pub fn new(gl_factory: GLContextFactory,
                webrender_gl: Rc<gl::Gl>,
                webrender_api_sender: webrender_api::RenderApiSender,
-               webvr_compositor: Option<Box<WebVRRenderHandler>>)
+               param: WebGLThreadParam)
                -> (WebGLThreads, Box<webrender::ExternalImageHandler>, Option<Box<webrender::OutputImageHandler>>) {
         // This implementation creates a single `WebGLThread` for all the pipelines.
         let channel = WebGLThread::start(gl_factory,
                                          webrender_api_sender,
-                                         webvr_compositor.map(|c| WebVRRenderWrapper(c)),
+                                         param,
                                          PhantomData);
         let output_handler = if PREFS.is_dom_to_texture_enabled() {
             Some(Box::new(OutputHandler::new(webrender_gl.clone(), channel.clone())))
@@ -106,8 +108,10 @@ impl WebGLThreadObserver for PhantomData<()> {
 
 
 /// Wrapper to send WebVR commands used in `WebGLThread`.
+#[cfg(feature = "webapi-webvr")]
 struct WebVRRenderWrapper(Box<WebVRRenderHandler>);
 
+#[cfg(feature = "webapi-webvr")]
 impl WebVRRenderHandler for WebVRRenderWrapper {
     fn handle(&mut self, command: WebVRCommand, texture: Option<(u32, Size2D<i32>)>) {
         self.0.handle(command, texture);

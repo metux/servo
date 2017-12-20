@@ -107,6 +107,7 @@ extern crate url;
 extern crate utf8;
 extern crate uuid;
 extern crate webrender_api;
+#[cfg(feature = "webapi-webvr")]
 extern crate webvr_traits;
 extern crate xml5ever;
 
