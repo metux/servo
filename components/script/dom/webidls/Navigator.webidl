@@ -63,8 +63,3 @@ partial interface Navigator {
 partial interface Navigator {
   [Pref="dom.permissions.enabled"] readonly attribute Permissions permissions;
 };
-
-// https://w3c.github.io/gamepad/#navigator-interface-extension
-partial interface Navigator {
-    [Pref="dom.gamepad.enabled"] GamepadList getGamepads();
-};
