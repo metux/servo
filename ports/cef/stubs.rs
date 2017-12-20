@@ -31,6 +31,7 @@ stub!(cef_force_web_plugin_shutdown);
 stub!(cef_get_current_platform_thread_handle);
 stub!(cef_get_current_platform_thread_id);
 stub!(cef_get_extensions_for_mime_type);
+#[cfg(feature = "webapi-geolocation")]
 stub!(cef_get_geolocation);
 stub!(cef_get_mime_type);
 stub!(cef_get_path);

@@ -21,7 +21,9 @@ pub use interfaces::cef_drag_handler::{CefDragHandler,cef_drag_handler_t,};
 pub use interfaces::cef_find_handler::{CefFindHandler,cef_find_handler_t,};
 pub use interfaces::cef_focus_handler::{CefFocusHandler,cef_focus_handler_t,};
 pub use interfaces::cef_frame::{CefFrame,cef_frame_t,};
+#[cfg(feature = "webapi-geolocation")]
 pub use interfaces::cef_geolocation_handler::{CefGeolocationCallback,CefGeolocationHandler,cef_geolocation_callback_t,cef_geolocation_handler_t,};
+#[cfg(feature = "webapi-geolocation")]
 pub use interfaces::cef_geolocation::{CefGetGeolocationCallback,cef_get_geolocation_callback_t,};
 pub use interfaces::cef_jsdialog_handler::{CefJSDialogCallback,CefJSDialogHandler,cef_jsdialog_callback_t,cef_jsdialog_handler_t,};
 pub use interfaces::cef_keyboard_handler::{CefKeyboardHandler,cef_keyboard_handler_t,};
@@ -80,7 +82,9 @@ pub mod cef_drag_handler;
 pub mod cef_find_handler;
 pub mod cef_focus_handler;
 pub mod cef_frame;
+#[cfg(feature = "webapi-geolocation")]
 pub mod cef_geolocation_handler;
+#[cfg(feature = "webapi-geolocation")]
 pub mod cef_geolocation;
 pub mod cef_jsdialog_handler;
 pub mod cef_keyboard_handler;

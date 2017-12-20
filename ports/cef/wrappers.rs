@@ -6,6 +6,7 @@ use interfaces::{CefV8Value};
 use interfaces::{cef_app_t, CefApp, cef_drag_data_t, cef_post_data_element_t, cef_v8value_t, CefPostDataElement};
 use interfaces::{cef_dialog_handler_t, cef_focus_handler_t};
 use interfaces::{cef_download_handler_t, cef_drag_handler_t, cef_context_menu_handler_t};
+#[cfg(feature = "webapi-geolocation")]
 use interfaces::{cef_geolocation_handler_t, cef_jsdialog_handler_t, cef_keyboard_handler_t};
 use interfaces::{cef_load_handler_t, cef_request_handler_t};
 use types::{cef_base_t, cef_browser_settings_t, CefBrowserSettings, cef_color_model_t};
@@ -123,6 +124,7 @@ cef_pointer_wrapper!(u64);
 cef_pointer_wrapper!(usize);
 
 cef_noop_wrapper!(());
+#[cfg(feature = "webapi-geolocation")]
 cef_noop_wrapper!(*const cef_geolocation_handler_t);
 cef_noop_wrapper!(*const cef_string_utf16);
 cef_noop_wrapper!(*mut cef_context_menu_handler_t);
@@ -132,6 +134,7 @@ cef_noop_wrapper!(*mut cef_drag_data_t);
 cef_noop_wrapper!(*mut cef_drag_handler_t);
 cef_noop_wrapper!(*mut cef_event_handle_t);
 cef_noop_wrapper!(*mut cef_focus_handler_t);
+#[cfg(feature = "webapi-geolocation")]
 cef_noop_wrapper!(*mut cef_geolocation_handler_t);
 cef_noop_wrapper!(*mut cef_jsdialog_handler_t);
 cef_noop_wrapper!(*mut cef_keyboard_handler_t);

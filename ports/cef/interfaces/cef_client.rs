@@ -105,6 +105,7 @@ pub struct _cef_client_t {
   // Return the handler for geolocation permissions requests. If no handler is
   // provided geolocation access will be denied by default.
   //
+  #[cfg(feature = "webapi-geolocation")]
   pub get_geolocation_handler: Option<extern "C" fn(
       this: *mut cef_client_t) -> *mut interfaces::cef_geolocation_handler_t>,
 
@@ -340,6 +341,7 @@ impl CefClient {
   // Return the handler for geolocation permissions requests. If no handler is
   // provided geolocation access will be denied by default.
   //
+  #[cfg(feature = "webapi-geolocation")]
   pub fn get_geolocation_handler(&self) -> interfaces::CefGeolocationHandler {
     if self.c_object.is_null() {
       panic!("called a CEF method on a null object")
