@@ -15,7 +15,6 @@ enum PermissionState {
 };
 
 enum PermissionName {
-  "geolocation",
   "notifications",
   "push",
   "midi",

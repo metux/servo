@@ -335,6 +335,7 @@ fn prompt_user(_message: &str) -> PermissionState {
 fn allowed_in_nonsecure_contexts(permission_name: &PermissionName) -> bool {
     match *permission_name {
         // https://w3c.github.io/permissions/#dom-permissionname-geolocation
+        #[cfg(feature = "webapi-geolocation")]
         PermissionName::Geolocation => true,
         // https://w3c.github.io/permissions/#dom-permissionname-notifications
         PermissionName::Notifications => true,

@@ -30538,11 +30538,6 @@
      {}
     ]
    ],
-   "webgl/conformance-2.0.0/deqp/temp_externs/w3c_geolocation.js": [
-    [
-     {}
-    ]
-   ],
    "webgl/conformance-2.0.0/deqp/temp_externs/w3c_indexeddb.js": [
     [
      {}
@@ -97705,10 +97700,6 @@
   ],
   "webgl/conformance-2.0.0/deqp/temp_externs/w3c_event3.js": [
    "fdf10598221c6d5b1e518b0e3fe3a8e77793a769",
-   "support"
-  ],
-  "webgl/conformance-2.0.0/deqp/temp_externs/w3c_geolocation.js": [
-   "70f82734f9cdab489926b2340c941b2bcdd951e5",
    "support"
   ],
   "webgl/conformance-2.0.0/deqp/temp_externs/w3c_indexeddb.js": [
