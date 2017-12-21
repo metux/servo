@@ -26,11 +26,6 @@ interface NavigatorID {
   readonly attribute DOMString userAgent;
 };
 
-// https://webbluetoothcg.github.io/web-bluetooth/#navigator-extensions
-partial interface Navigator {
-  [SameObject, Pref="dom.bluetooth.enabled"] readonly attribute Bluetooth bluetooth;
-};
-
 // https://w3c.github.io/ServiceWorker/#navigator-service-worker
 partial interface Navigator {
   [SameObject, Pref="dom.serviceworker.enabled"] readonly attribute ServiceWorkerContainer serviceWorker;
