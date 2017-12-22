@@ -301,10 +301,15 @@ pub mod filereadersync;
 pub mod focusevent;
 pub mod forcetouchevent;
 pub mod formdata;
+#[cfg(feature = "webapi-gamepad")]
 pub mod gamepad;
+#[cfg(feature = "webapi-gamepad")]
 pub mod gamepadbutton;
+#[cfg(feature = "webapi-gamepad")]
 pub mod gamepadbuttonlist;
+#[cfg(feature = "webapi-gamepad")]
 pub mod gamepadevent;
+#[cfg(feature = "webapi-gamepad")]
 pub mod gamepadlist;
 pub mod globalscope;
 pub mod hashchangeevent;

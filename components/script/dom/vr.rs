@@ -12,7 +12,9 @@ use dom::bindings::reflector::{DomObject, Reflector, reflect_dom_object};
 use dom::bindings::root::{Dom, DomRoot};
 use dom::event::Event;
 use dom::eventtarget::EventTarget;
+#[cfg(feature = "webapi-gamepad")]
 use dom::gamepad::Gamepad;
+#[cfg(feature = "webapi-gamepad")]
 use dom::gamepadevent::GamepadEventType;
 use dom::globalscope::GlobalScope;
 use dom::promise::Promise;
@@ -23,12 +25,14 @@ use ipc_channel::ipc;
 use ipc_channel::ipc::IpcSender;
 use std::rc::Rc;
 use webvr_traits::{WebVRDisplayData, WebVRDisplayEvent, WebVREvent, WebVRMsg};
+#[cfg(feature = "webapi-gamepad")]
 use webvr_traits::{WebVRGamepadData, WebVRGamepadEvent, WebVRGamepadState};
 
 #[dom_struct]
 pub struct VR {
     reflector_: Reflector,
     displays: DomRefCell<Vec<Dom<VRDisplay>>>,
+    #[cfg(feature = "webapi-gamepad")]
     gamepads: DomRefCell<Vec<Dom<Gamepad>>>
 }
 
@@ -37,6 +41,7 @@ impl VR {
         VR {
             reflector_: Reflector::new(),
             displays: DomRefCell::new(Vec::new()),
+            #[cfg(feature = "webapi-gamepad")]
             gamepads: DomRefCell::new(Vec::new()),
         }
     }
@@ -161,6 +166,7 @@ impl VR {
         };
     }
 
+    #[cfg(feature = "webapi-gamepad")]
     fn handle_gamepad_event(&self, event: WebVRGamepadEvent) {
         match event {
             WebVRGamepadEvent::Connect(data, state) => {
@@ -184,6 +190,7 @@ impl VR {
             WebVREvent::Display(event) => {
                 self.handle_display_event(event);
             },
+            #[cfg(feature = "webapi-gamepad")]
             WebVREvent::Gamepad(event) => {
                 self.handle_gamepad_event(event);
             }
@@ -203,6 +210,7 @@ impl VR {
 }
 
 // Gamepad
+#[cfg(feature = "webapi-gamepad")]
 impl VR {
     fn find_gamepad(&self, gamepad_id: u32) -> Option<DomRoot<Gamepad>> {
         self.gamepads.borrow()

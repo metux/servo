@@ -113,6 +113,7 @@ use style::values::specified::Length;
 use time::Duration;
 use uuid::Uuid;
 use webrender_api::{DocumentId, ImageKey};
+#[cfg(feature = "webapi-gamepad")]
 use webvr_traits::WebVRGamepadHand;
 
 /// A trait to allow tracing (only) DOM objects.
@@ -415,6 +416,7 @@ unsafe_no_jsmanaged_fields!(WebGLVertexArrayId);
 unsafe_no_jsmanaged_fields!(WebGLVersion);
 unsafe_no_jsmanaged_fields!(WebGLSLVersion);
 unsafe_no_jsmanaged_fields!(MediaList);
+#[cfg(feature = "webapi-gamepad")]
 unsafe_no_jsmanaged_fields!(WebVRGamepadHand);
 unsafe_no_jsmanaged_fields!(ScriptToConstellationChan);
 unsafe_no_jsmanaged_fields!(InteractiveMetrics);

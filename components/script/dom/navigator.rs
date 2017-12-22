@@ -10,6 +10,7 @@ use dom::bindings::root::{DomRoot, MutNullableDom};
 use dom::bindings::str::DOMString;
 #[cfg(feature = "webapi-bluetooth")]
 use dom::bluetooth::Bluetooth;
+#[cfg(feature = "webapi-gamepad")]
 use dom::gamepadlist::GamepadList;
 use dom::mimetypearray::MimeTypeArray;
 use dom::navigatorinfo;
@@ -31,6 +32,7 @@ pub struct Navigator {
     mime_types: MutNullableDom<MimeTypeArray>,
     service_worker: MutNullableDom<ServiceWorkerContainer>,
     vr: MutNullableDom<VR>,
+    #[cfg(feature = "webapi-gamepad")]
     gamepads: MutNullableDom<GamepadList>,
     permissions: MutNullableDom<Permissions>,
 }
@@ -45,6 +47,7 @@ impl Navigator {
             mime_types: Default::default(),
             service_worker: Default::default(),
             vr: Default::default(),
+            #[cfg(feature = "webapi-gamepad")]
             gamepads: Default::default(),
             permissions: Default::default(),
         }
@@ -132,6 +135,7 @@ impl NavigatorMethods for Navigator {
     }
 
     // https://www.w3.org/TR/gamepad/#navigator-interface-extension
+    #[cfg(feature = "webapi-gamepad")]
     fn GetGamepads(&self) -> DomRoot<GamepadList> {
         let root = self.gamepads.or_init(|| {
             GamepadList::new(&self.global(), &[])

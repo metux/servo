@@ -19,10 +19,15 @@ pub use webvr::VREvent as WebVREvent;
 pub use webvr::VREye as WebVREye;
 pub use webvr::VREyeParameters as WebVREyeParameters;
 pub use webvr::VRFieldOfView as WebVRFieldOfView;
+#[cfg(feature = "webapi-gamepad")]
 pub use webvr::VRGamepadButton as WebVRGamepadButton;
+#[cfg(feature = "webapi-gamepad")]
 pub use webvr::VRGamepadData as WebVRGamepadData;
+#[cfg(feature = "webapi-gamepad")]
 pub use webvr::VRGamepadEvent as WebVRGamepadEvent;
+#[cfg(feature = "webapi-gamepad")]
 pub use webvr::VRGamepadHand as WebVRGamepadHand;
+#[cfg(feature = "webapi-gamepad")]
 pub use webvr::VRGamepadState as WebVRGamepadState;
 pub use webvr::VRFrameData as WebVRFrameData;
 pub use webvr::VRLayer as WebVRLayer;
