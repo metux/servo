@@ -1,0 +1,62 @@
+#!/bin/bash
+
+PACKAGES_DEBIAN_COMMON="
+    llvm
+    pkg-config
+    zlib1g-dev
+    make
+    virtualenv
+    libfreetype6-dev
+    libexpat1-dev
+    libfontconfig1-dev
+    mesa-common-dev
+    cmake
+    git
+    clang
+"
+
+do_debian_common() {
+    echo "Bootstrapping on Debian $1"
+    if ! apt-get install $PACKAGES_DEBIAN_COMMON; then
+        echo "Package installation failed." >&2
+        return 1
+    fi
+}
+
+do_debian_jessie() {
+    do_debian_common || return 1
+
+    # special case cmake: needs to be coming from backports
+    if ! apt-get install -t jessie-backports cmake ; then
+        echo "Installing cmake from backports failed - is the backports repo enabled" >&2
+        return 1
+    fi
+}
+
+
+if [ ! `id -un` == 'root' ]; then
+    echo "$0: needs to be run as root" >&1
+    exit 1
+fi
+
+DIST_NAME=`lsb_release -i -s`
+
+if [ "$DIST_NAME" != 'Debian' ]; then
+    echo "$0: doesn't seem to be Debian - lsb_release installed ?" >&2
+    exit 2
+fi
+
+DIST_CODENAME=`lsb_release -c -s`
+
+case "$DIST_CODENAME" in
+    "jessie")
+        do_debian_jessie "$DIST_CODENAME" || exit 4
+    ;;
+    "ascii")
+        do_debian_common "$DIST_CODENAME" || exit 4
+    ;;
+    *)
+        echo "Unhandled Debian release: $DIST_CODENAME"
+        exit 3
+    ;;
+esac
