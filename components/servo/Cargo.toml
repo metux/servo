@@ -25,10 +25,11 @@ unstable = [
     "profile/unstable",
     "script/unstable",
 ]
+#webapi-bluetooth = ["bluetooth", "bluetooth_traits"]
 
 [dependencies]
-bluetooth_traits = {path = "../bluetooth_traits"}
-bluetooth = {path = "../bluetooth"}
+#bluetooth_traits = {path = "../bluetooth_traits", optional = true}
+#bluetooth = {path = "../bluetooth", optional = true}
 canvas = {path = "../canvas"}
 canvas_traits = {path = "../canvas_traits"}
 compositing = {path = "../compositing"}

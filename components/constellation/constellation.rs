@@ -94,6 +94,7 @@
 //! See https://github.com/servo/servo/issues/14704
 
 use backtrace::Backtrace;
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use browsingcontext::{BrowsingContext, SessionHistoryChange, SessionHistoryEntry};
 use browsingcontext::{FullyActiveBrowsingContextsIterator, AllBrowsingContextsIterator};
@@ -235,6 +236,7 @@ pub struct Constellation<Message, LTF, STF> {
 
     /// An IPC channel for the constellation to send messages to the
     /// bluetooth thread.
+    #[cfg(feature = "webapi-bluetooth")]
     bluetooth_thread: IpcSender<BluetoothRequest>,
 
     /// An IPC channel for the constellation to send messages to the
@@ -352,6 +354,7 @@ pub struct InitialConstellationState {
     pub devtools_chan: Option<Sender<DevtoolsControlMsg>>,
 
     /// A channel to the bluetooth thread.
+    #[cfg(feature = "webapi-bluetooth")]
     pub bluetooth_thread: IpcSender<BluetoothRequest>,
 
     /// A channel to the font cache thread.
@@ -578,6 +581,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
                 active_browser_id: None,
                 debugger_chan: state.debugger_chan,
                 devtools_chan: state.devtools_chan,
+                #[cfg(feature = "webapi-bluetooth")]
                 bluetooth_thread: state.bluetooth_thread,
                 public_resource_threads: state.public_resource_threads,
                 private_resource_threads: state.private_resource_threads,
@@ -731,6 +735,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
             scheduler_chan: self.scheduler_chan.clone(),
             compositor_proxy: self.compositor_proxy.clone(),
             devtools_chan: self.devtools_chan.clone(),
+            #[cfg(feature = "webapi-bluetooth")]
             bluetooth_thread: self.bluetooth_thread.clone(),
             swmanager_thread: self.swmanager_sender.clone(),
             font_cache_thread: self.font_cache_thread.clone(),
@@ -1441,9 +1446,12 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
             warn!("Exit storage thread failed ({})", e);
         }
 
-        debug!("Exiting bluetooth thread.");
-        if let Err(e) = self.bluetooth_thread.send(BluetoothRequest::Exit) {
-            warn!("Exit bluetooth thread failed ({})", e);
+        #[cfg(feature = "webapi-bluetooth")]
+        {
+            debug!("Exiting bluetooth thread.");
+            if let Err(e) = self.bluetooth_thread.send(BluetoothRequest::Exit) {
+                warn!("Exit bluetooth thread failed ({})", e);
+            }
         }
 
         debug!("Exiting service worker manager thread.");

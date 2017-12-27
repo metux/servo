@@ -36,3 +36,6 @@ serde_derive = { git = "https://github.com/gankro/serde", branch = "deserialize_
 #
 #     [patch."https://github.com/servo/<repository>"]
 #     <crate> = { path = "/path/to/local/checkout" }
+
+[features]
+webapi-bluetooth = []

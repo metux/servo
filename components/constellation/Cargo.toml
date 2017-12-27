@@ -11,7 +11,7 @@ path = "lib.rs"
 
 [dependencies]
 backtrace = "0.3"
-bluetooth_traits = { path = "../bluetooth_traits" }
+#bluetooth_traits = { path = "../bluetooth_traits", optional = true }
 canvas = {path = "../canvas"}
 clipboard = "0.4"
 canvas_traits = {path = "../canvas_traits"}

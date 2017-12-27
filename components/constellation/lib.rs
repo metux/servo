@@ -7,6 +7,7 @@
 #![feature(mpsc_select)]
 
 extern crate backtrace;
+#[cfg(feature = "webapi-bluetooth")]
 extern crate bluetooth_traits;
 extern crate canvas;
 extern crate canvas_traits;

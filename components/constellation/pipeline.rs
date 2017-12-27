@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use canvas_traits::webgl::WebGLPipeline;
 use compositing::CompositionPipeline;
@@ -128,6 +129,7 @@ pub struct InitialPipelineState {
     pub devtools_chan: Option<Sender<DevtoolsControlMsg>>,
 
     /// A channel to the bluetooth thread.
+    #[cfg(feature = "webapi-bluetooth")]
     pub bluetooth_thread: IpcSender<BluetoothRequest>,
 
     /// A channel to the service worker manager thread
@@ -254,6 +256,7 @@ impl Pipeline {
                     script_to_constellation_chan: state.script_to_constellation_chan.clone(),
                     scheduler_chan: state.scheduler_chan,
                     devtools_chan: script_to_devtools_chan,
+                    #[cfg(feature = "webapi-bluetooth")]
                     bluetooth_thread: state.bluetooth_thread,
                     swmanager_thread: state.swmanager_thread,
                     font_cache_thread: state.font_cache_thread,
@@ -456,6 +459,7 @@ pub struct UnprivilegedPipelineContent {
     layout_to_constellation_chan: IpcSender<LayoutMsg>,
     scheduler_chan: IpcSender<TimerSchedulerMsg>,
     devtools_chan: Option<IpcSender<ScriptToDevtoolsControlMsg>>,
+    #[cfg(feature = "webapi-bluetooth")]
     bluetooth_thread: IpcSender<BluetoothRequest>,
     swmanager_thread: IpcSender<SWManagerMsg>,
     font_cache_thread: FontCacheThread,
@@ -501,6 +505,7 @@ impl UnprivilegedPipelineContent {
             script_to_constellation_chan: self.script_to_constellation_chan.clone(),
             layout_to_constellation_chan: self.layout_to_constellation_chan.clone(),
             scheduler_chan: self.scheduler_chan,
+            #[cfg(feature = "webapi-bluetooth")]
             bluetooth_thread: self.bluetooth_thread,
             resource_threads: self.resource_threads,
             image_cache: image_cache.clone(),

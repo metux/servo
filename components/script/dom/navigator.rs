@@ -8,6 +8,7 @@ use dom::bindings::codegen::Bindings::VRBinding::VRBinding::VRMethods;
 use dom::bindings::reflector::{Reflector, DomObject, reflect_dom_object};
 use dom::bindings::root::{DomRoot, MutNullableDom};
 use dom::bindings::str::DOMString;
+#[cfg(feature = "webapi-bluetooth")]
 use dom::bluetooth::Bluetooth;
 use dom::gamepadlist::GamepadList;
 use dom::mimetypearray::MimeTypeArray;
@@ -24,6 +25,7 @@ use std::rc::Rc;
 #[dom_struct]
 pub struct Navigator {
     reflector_: Reflector,
+    #[cfg(feature = "webapi-bluetooth")]
     bluetooth: MutNullableDom<Bluetooth>,
     plugins: MutNullableDom<PluginArray>,
     mime_types: MutNullableDom<MimeTypeArray>,
@@ -37,6 +39,7 @@ impl Navigator {
     fn new_inherited() -> Navigator {
         Navigator {
             reflector_: Reflector::new(),
+            #[cfg(feature = "webapi-bluetooth")]
             bluetooth: Default::default(),
             plugins: Default::default(),
             mime_types: Default::default(),
@@ -91,6 +94,7 @@ impl NavigatorMethods for Navigator {
     }
 
     // https://webbluetoothcg.github.io/web-bluetooth/#dom-navigator-bluetooth
+    #[cfg(feature = "webapi-bluetooth")]
     fn Bluetooth(&self) -> DomRoot<Bluetooth> {
         self.bluetooth.or_init(|| Bluetooth::new(&self.global()))
     }

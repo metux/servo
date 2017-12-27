@@ -27,6 +27,7 @@ extern crate audio_video_metadata;
 extern crate base64;
 #[macro_use]
 extern crate bitflags;
+#[cfg(feature = "webapi-bluetooth")]
 extern crate bluetooth_traits;
 extern crate byteorder;
 extern crate canvas_traits;

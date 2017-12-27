@@ -17,6 +17,7 @@
 //! a page runs its course and the script thread returns to processing events in the main event
 //! loop.
 
+#[cfg(feature = "webapi-bluetooth")]
 use bluetooth_traits::BluetoothRequest;
 use canvas_traits::webgl::WebGLPipeline;
 use devtools;
@@ -56,7 +57,7 @@ use dom::serviceworkerregistration::ServiceWorkerRegistration;
 use dom::servoparser::{ParserContext, ServoParser};
 use dom::transitionevent::TransitionEvent;
 use dom::uievent::UIEvent;
-use dom::window::{ReflowReason, Window};
+use dom::window::{ReflowReason, Window, WindowParam};
 use dom::windowproxy::WindowProxy;
 use dom::worker::TrustedWorkerAddress;
 use dom::worklet::WorkletThreadPool;
@@ -410,6 +411,7 @@ pub struct ScriptThread {
     /// there are many iframes.
     resource_threads: ResourceThreads,
     /// A handle to the bluetooth thread.
+    #[cfg(feature = "webapi-bluetooth")]
     bluetooth_thread: IpcSender<BluetoothRequest>,
 
     /// The port on which the script thread receives messages (load URL, exit, etc.)
@@ -834,6 +836,7 @@ impl ScriptThread {
             image_cache_port: image_cache_port,
 
             resource_threads: state.resource_threads,
+            #[cfg(feature = "webapi-bluetooth")]
             bluetooth_thread: state.bluetooth_thread,
 
             port: port,
@@ -2136,6 +2139,11 @@ impl ScriptThread {
             pipeline_id: incomplete.pipeline_id,
         };
 
+        let window_param = WindowParam {
+            #[cfg(feature = "webapi-bluetooth")]
+            bluetooth_thread: self.bluetooth_thread.clone(),
+        };
+
         // Create the window and document objects.
         let window = Window::new(
             self.js_runtime.clone(),
@@ -2149,7 +2157,7 @@ impl ScriptThread {
             self.image_cache_channel.clone(),
             self.image_cache.clone(),
             self.resource_threads.clone(),
-            self.bluetooth_thread.clone(),
+            window_param,
             self.mem_profiler_chan.clone(),
             self.time_profiler_chan.clone(),
             self.devtools_chan.clone(),

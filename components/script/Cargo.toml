@@ -34,7 +34,7 @@ app_units = "0.6"
 audio-video-metadata = "0.1.4"
 base64 = "0.6"
 bitflags = "1.0"
-bluetooth_traits = {path = "../bluetooth_traits"}
+#bluetooth_traits = {path = "../bluetooth_traits", optional=true}
 byteorder = "1.0"
 canvas_traits = {path = "../canvas_traits"}
 caseless = "0.1.0"
