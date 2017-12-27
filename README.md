@@ -1,3 +1,25 @@
+# HACK: bluetooth as optional feature
+
+Goal: make bluetooth an (build-time) optional feature.
+
+Whats done:
+
+* all references of bt stuff are depending feature "webapi-bluetooth"
+* Window::new() now takes an struct WindowParam instead of directly using
+  IpcSender<BluetoothRequest> - can also be used for other stuff like webvr
+* no bt code is compiled in, if the feature is disabled (as proof, it's
+  completely removed by separate patches)
+
+Yet missing:
+
+* individual enum values (permissions) not conditionally compiled yet,
+  (seems unsupported by rustc) - therefore removed by separate patch
+* no opt-out of webidl files yet - therefore removed by separate patch
+* no opt-out of tests yet - therefore removed by separate patch
+
+
+Contact: Enrico Weigel, metux IT consult <info@metux.net>
+
 # The Servo Parallel Browser Engine Project
 
 [![Linux Build Status](https://img.shields.io/travis/servo/servo/master.svg?label=Linux%20build)](https://travis-ci.org/servo/servo)  [![Windows Build Status](https://img.shields.io/appveyor/ci/servo/servo/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/servo/servo/branch/master)  [![Changelog #228](https://img.shields.io/badge/changelog-%23228-9E978E.svg)](https://changelog.com/podcast/228)
